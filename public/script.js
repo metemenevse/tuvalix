@@ -175,34 +175,29 @@ function getGameImageUrl(appid, imgLogoUrl) {
 }
 
 /* =========================
-   3D Card Tilt Effect
+   3D Card Tilt Effect FIX
    ========================= */
 
-document.addEventListener("mousemove", (e) => {
+function initCardTilt() {
     const cards = document.querySelectorAll(".game-card");
 
     cards.forEach((card) => {
-        const rect = card.getBoundingClientRect();
+        let bounds = null;
 
-        if (
-            e.clientX >= rect.left &&
-            e.clientX <= rect.right &&
-            e.clientY >= rect.top &&
-            e.clientY <= rect.bottom
-        ) {
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        function handleMouseMove(e) {
+            if (!bounds) bounds = card.getBoundingClientRect();
 
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+            const x = e.clientX - bounds.left;
+            const y = e.clientY - bounds.top;
 
-            const percentX = (x - centerX) / centerX;
-            const percentY = (y - centerY) / centerY;
+            const percentX = (x / bounds.width - 0.5) * 2;
+            const percentY = (y / bounds.height - 0.5) * 2;
 
-            const rotateY = percentX * 12;
-            const rotateX = percentY * -12;
+            const rotateY = percentX * 10;
+            const rotateX = -percentY * 10;
 
             card.style.transform = `
+                perspective(800px)
                 rotateX(${rotateX}deg)
                 rotateY(${rotateY}deg)
                 scale(1.05)
@@ -210,12 +205,22 @@ document.addEventListener("mousemove", (e) => {
 
             card.style.setProperty("--x", `${x}px`);
             card.style.setProperty("--y", `${y}px`);
-        } else {
+        }
+
+        function resetCard() {
             card.style.transform = `
+                perspective(800px)
                 rotateX(0deg)
                 rotateY(0deg)
                 scale(1)
             `;
+            bounds = null;
         }
+
+        card.addEventListener("mousemove", handleMouseMove);
+        card.addEventListener("mouseleave", resetCard);
     });
-});
+}
+
+/* Mozaik her yenilendiğinde tekrar bağlansın */
+initCardTilt();
