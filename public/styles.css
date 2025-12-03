@@ -419,9 +419,6 @@ body {
     pointer-events: none;
 }
 
-.game-card:hover::after {
-    transform: translateX(120%);
-}
 
 /* =========================
    3D Hover Tilt Effect
