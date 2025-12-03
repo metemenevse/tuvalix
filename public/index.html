@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Tuvalix - Steam Tuval Oluşturucu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <!-- Blur imleç -->
+    <div class="cursor-blur"></div>
+
+    <div class="app">
+        <header class="header">
+            <div class="brand">
+                <div class="brand-mark"></div>
+                <h1 class="brand-title">Tuvalix</h1>
+            </div>
+            <p class="brand-subtitle">
+                Steam oyun saatlerinizle oluşturulmuş dinamik bir oyun tuvali.
+            </p>
+        </header>
+
+        <main class="main">
+            <section class="control-panel">
+                <form id="username-form" class="username-form">
+                    <label for="steam-username" class="input-label">
+                        Steam kullanıcı adınızı girin
+                    </label>
+                    <div class="input-row">
+                        <input
+                            type="text"
+                            id="steam-username"
+                            class="text-input"
+                            placeholder="Örneğin: gabeN"
+                            autocomplete="off"
+                            required
+                        />
+                        <button type="submit" class="primary-button">
+                            Tuval Oluştur
+                        </button>
+                    </div>
+
+                    <p class="help-text">
+                        Önemli: Tuval oluşturabilmek için Steam gizlilik ayarlarınızdan
+                        <strong>"Oyun detayları"</strong> kısmını
+                        <strong>"Herkese Açık"</strong> yapmanız gerekmektedir.
+                    </p>
+                </form>
+
+                <div id="status-message" class="status-message"></div>
+            </section>
+
+            <section class="mosaic-wrapper">
+                <div id="mosaic-container" class="mosaic-container">
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <span class="footer-text">
+                Tuvalix • Steam verileriyle oluşturulan görsel oyun arşivi
+            </span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
