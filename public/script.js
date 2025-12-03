@@ -8,7 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const mosaicEl = document.getElementById("mosaic-container");
     const cursorBlurEl = document.querySelector(".cursor-blur");
 
-    // Özel imleç hareketi
+    /* =========================
+       Özel imleç
+       ========================= */
     document.addEventListener("mousemove", (e) => {
         const size = 50;
         const x = e.clientX - size / 2;
@@ -16,7 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
         cursorBlurEl.style.transform = `translate(${x}px, ${y}px)`;
     });
 
-    // Form submit
+    /* =========================
+       Form submit
+       ========================= */
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const username = input.value.trim();
@@ -30,51 +34,62 @@ document.addEventListener("DOMContentLoaded", () => {
         mosaicEl.innerHTML = "";
 
         try {
-            // 1) Kullanıcı adından SteamID çöz
+            // 1) Vanity çöz
             const resolveRes = await fetch(
                 `/api/resolveVanity?username=${encodeURIComponent(username)}`
             );
+
             if (!resolveRes.ok) {
                 const errData = await safeJson(resolveRes);
-                const msg =
+                setStatus(
                     (errData && errData.error) ||
-                    "Kullanıcı adı çözümlenirken hata oluştu.";
-                setStatus(msg, "error");
+                        "Kullanıcı adı çözümlenirken hata oluştu.",
+                    "error"
+                );
                 return;
             }
+
             const resolveData = await resolveRes.json();
             const steamId = resolveData.steamId;
+
             if (!steamId) {
                 setStatus("Kullanıcı bulunamadı.", "error");
                 return;
             }
 
-            // 2) SteamID'den oyunları çek
+            // 2) Oyun listesi
             const gamesRes = await fetch(
                 `/api/games?steamId=${encodeURIComponent(steamId)}`
             );
+
             if (!gamesRes.ok) {
                 const errData = await safeJson(gamesRes);
-                const msg =
+                setStatus(
                     (errData && errData.error) ||
-                    "Oyunlar alınırken hata oluştu.";
-                setStatus(msg, "error");
+                        "Oyunlar alınırken hata oluştu.",
+                    "error"
+                );
                 return;
             }
+
             const gamesData = await gamesRes.json();
             const games = gamesData.games || [];
 
             if (!games.length) {
                 setStatus(
-                    "Oyun verisi bulunamadı. Muhtemelen oyun detaylarınız gizli veya hiç oyununuz yok.",
+                    "Oyun verisi bulunamadı. Oyun detaylarınız gizli olabilir.",
                     "error"
                 );
                 return;
             }
 
             renderMosaic(games, mosaicEl);
+
+            /* 🔥 Mozaik oluştuktan sonra 3D Tilt aktif edilir */
+            initCardTilt();
+
             setStatus(
-                `Toplam ${games.length} oyun bulundu. Oyun saatlerine göre tuval oluşturuldu.`,
+                `Toplam ${games.length} oyun bulundu. Tuval hazır.`,
                 "success"
             );
         } catch (err) {
@@ -83,17 +98,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    /* =========================
+       Status helper
+       ========================= */
     function setStatus(message, type) {
         statusEl.textContent = message;
-        statusEl.classList.remove("status-message--error", "status-message--success");
-        if (type === "error") {
-            statusEl.classList.add("status-message--error");
-        } else if (type === "success") {
+        statusEl.classList.remove(
+            "status-message--error",
+            "status-message--success"
+        );
+
+        if (type === "error") statusEl.classList.add("status-message--error");
+        if (type === "success")
             statusEl.classList.add("status-message--success");
-        }
     }
 });
 
+/* =========================
+   Safe JSON
+   ========================= */
 async function safeJson(response) {
     try {
         return await response.json();
@@ -102,44 +125,35 @@ async function safeJson(response) {
     }
 }
 
-// =========================
-// Mozaik Oluşturma
-// =========================
-
+/* =========================
+   Mozaik Render
+   ========================= */
 function renderMosaic(games, containerEl) {
     containerEl.innerHTML = "";
 
     games.forEach((game) => {
         const sizeClass = getSizeClass(game.hours);
+
         const card = document.createElement("article");
         card.className = `game-card ${sizeClass}`;
 
-        // Kapak görseli
         const img = document.createElement("img");
-        const imgUrl = getGameImageUrl(game.appid, game.img_logo_url);
-        img.src = imgUrl;
-        img.alt = ""; // isim istemiyoruz
+        img.src = getGameImageUrl(game.appid);
+        img.alt = "";
 
-        // Header yoksa placeholder'a düş
         img.onerror = () => {
             img.onerror = null;
             img.src = "https://placehold.co/640x360/111111/ffffff?text=No+Cover";
         };
 
-        // Hover overlay
         const overlay = document.createElement("div");
         overlay.className = "game-card-overlay";
 
-        // SADECE OYUN SÜRESİ
-        const playtime = document.createElement("div");
-        playtime.className = "playtime-badge";
-        const hoursRounded = Math.round(game.hours);
-        // İstersen "hrs" yazabilirsin:
-        // playtime.textContent = `${hoursRounded} hrs`;
-        playtime.textContent = `${hoursRounded} saat`;
+        const badge = document.createElement("div");
+        badge.className = "playtime-badge";
+        badge.textContent = `${Math.round(game.hours)} saat`;
 
-        overlay.appendChild(playtime);
-
+        overlay.appendChild(badge);
         card.appendChild(img);
         card.appendChild(overlay);
 
@@ -147,10 +161,9 @@ function renderMosaic(games, containerEl) {
     });
 }
 
-
-/**
- * Saat aralığına göre kart boyutu sınıfı
- */
+/* =========================
+   Size Helpers
+   ========================= */
 function getSizeClass(hours) {
     if (hours >= 1500) return "size-1500";
     if (hours >= 1000) return "size-1000";
@@ -161,66 +174,54 @@ function getSizeClass(hours) {
     return "size-25";
 }
 
-/**
- * Oyun kapağı URL'si
- * Burada direkt store header görselini kullanıyoruz.
- */
-function getGameImageUrl(appid, imgLogoUrl) {
-    if (!appid) {
+/* =========================
+   Game Cover Resolver
+   ========================= */
+function getGameImageUrl(appid) {
+    if (!appid)
         return "https://placehold.co/640x360/111111/ffffff?text=No+Cover";
-    }
 
-    // Standart Steam header resmi (16:9’a yakın ratio)
     return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
 }
 
 /* =========================
-   3D Card Tilt Effect FIX
+   3D TILT – STABLE VERSION
    ========================= */
-
 function initCardTilt() {
     const cards = document.querySelectorAll(".game-card");
 
     cards.forEach((card) => {
         let bounds = null;
 
-        function handleMouseMove(e) {
+        card.addEventListener("mousemove", (e) => {
             if (!bounds) bounds = card.getBoundingClientRect();
 
             const x = e.clientX - bounds.left;
             const y = e.clientY - bounds.top;
 
-            const percentX = (x / bounds.width - 0.5) * 2;
-            const percentY = (y / bounds.height - 0.5) * 2;
-
-            const rotateY = percentX * 10;
-            const rotateX = -percentY * 10;
+            const px = (x / bounds.width - 0.5) * 2;
+            const py = (y / bounds.height - 0.5) * 2;
 
             card.style.transform = `
-                perspective(800px)
-                rotateX(${rotateX}deg)
-                rotateY(${rotateY}deg)
-                scale(1.05)
+                perspective(900px)
+                rotateX(${py * -8}deg)
+                rotateY(${px * 8}deg)
+                scale(1.04)
             `;
 
             card.style.setProperty("--x", `${x}px`);
             card.style.setProperty("--y", `${y}px`);
-        }
+        });
 
-        function resetCard() {
+        card.addEventListener("mouseleave", () => {
             card.style.transform = `
-                perspective(800px)
+                perspective(900px)
                 rotateX(0deg)
                 rotateY(0deg)
                 scale(1)
             `;
-            bounds = null;
-        }
 
-        card.addEventListener("mousemove", handleMouseMove);
-        card.addEventListener("mouseleave", resetCard);
+            bounds = null;
+        });
     });
 }
-
-/* Mozaik her yenilendiğinde tekrar bağlansın */
-initCardTilt();
