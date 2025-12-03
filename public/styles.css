@@ -422,3 +422,35 @@ body {
 .game-card:hover::after {
     transform: translateX(120%);
 }
+
+/* =========================
+   3D Hover Tilt Effect
+   ========================= */
+
+.mosaic-container {
+    perspective: 900px;
+}
+
+.game-card {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.15s ease-out;
+}
+
+.game-card img {
+    transform: translateZ(35px);
+}
+
+/* Işık yansıması katmanı parallax için */
+/* Daha önce sweep varsa sorun olmaz */
+.game-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        circle at var(--x, 50%) var(--y, 50%),
+        rgba(255,255,255,0.16),
+        transparent 60%
+    );
+}

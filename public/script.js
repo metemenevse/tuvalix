@@ -174,3 +174,48 @@ function getGameImageUrl(appid, imgLogoUrl) {
     return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
 }
 
+/* =========================
+   3D Card Tilt Effect
+   ========================= */
+
+document.addEventListener("mousemove", (e) => {
+    const cards = document.querySelectorAll(".game-card");
+
+    cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+
+        if (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+        ) {
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const percentX = (x - centerX) / centerX;
+            const percentY = (y - centerY) / centerY;
+
+            const rotateY = percentX * 12;
+            const rotateX = percentY * -12;
+
+            card.style.transform = `
+                rotateX(${rotateX}deg)
+                rotateY(${rotateY}deg)
+                scale(1.05)
+            `;
+
+            card.style.setProperty("--x", `${x}px`);
+            card.style.setProperty("--y", `${y}px`);
+        } else {
+            card.style.transform = `
+                rotateX(0deg)
+                rotateY(0deg)
+                scale(1)
+            `;
+        }
+    });
+});
