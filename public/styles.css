@@ -289,11 +289,11 @@ body {
 
 /* Hover'da öne çıkma */
 .game-card:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 22px 45px rgba(0, 0, 0, 0.85);
     z-index: 5;
-    filter: saturate(1.08);
+    filter: saturate(1.1);
 }
+
 
 /* Kapak – kartı tamamen doldurur */
 .game-card img {
