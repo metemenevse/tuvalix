@@ -395,3 +395,30 @@ body {
         grid-auto-rows: 45px;
     }
 }
+
+/* ==================
+   Hover Light Sweep
+   ================== */
+
+.game-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba(255,255,255,0.14) 45%,
+        rgba(255,255,255,0.35) 50%,
+        rgba(255,255,255,0.14) 55%,
+        transparent 70%
+    );
+
+    transform: translateX(-120%);
+    transition: transform 0.45s ease-out;
+    pointer-events: none;
+}
+
+.game-card:hover::after {
+    transform: translateX(120%);
+}
