@@ -1,6 +1,3 @@
-// Artık frontend'de API_KEY YOK.
-// Tüm istekler backend'e gidiyor: /api/resolveVanity ve /api/games
-
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("username-form");
     const input = document.getElementById("steam-username");
@@ -8,19 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const mosaicEl = document.getElementById("mosaic-container");
     const cursorBlurEl = document.querySelector(".cursor-blur");
 
-    /* =========================
-       Özel imleç
-       ========================= */
     document.addEventListener("mousemove", (e) => {
         const size = 50;
         const x = e.clientX - size / 2;
         const y = e.clientY - size / 2;
         cursorBlurEl.style.transform = `translate(${x}px, ${y}px)`;
     });
-
-    /* =========================
-       Form submit
-       ========================= */
+    
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const username = input.value.trim();
@@ -34,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         mosaicEl.innerHTML = "";
 
         try {
-            // 1) Vanity çöz
+           
             const resolveRes = await fetch(
                 `/api/resolveVanity?username=${encodeURIComponent(username)}`
             );
@@ -57,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // 2) Oyun listesi
+            
             const gamesRes = await fetch(
                 `/api/games?steamId=${encodeURIComponent(steamId)}`
             );
@@ -85,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             renderMosaic(games, mosaicEl);
 
-            /* 🔥 Mozaik oluştuktan sonra 3D Tilt aktif edilir */
+           
             initCardTilt();
 
             setStatus(
@@ -98,9 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /* =========================
-       Status helper
-       ========================= */
     function setStatus(message, type) {
         statusEl.textContent = message;
         statusEl.classList.remove(
@@ -114,9 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* =========================
-   Safe JSON
-   ========================= */
 async function safeJson(response) {
     try {
         return await response.json();
@@ -125,9 +110,6 @@ async function safeJson(response) {
     }
 }
 
-/* =========================
-   Mozaik Render
-   ========================= */
 function renderMosaic(games, containerEl) {
     containerEl.innerHTML = "";
 
@@ -161,9 +143,6 @@ function renderMosaic(games, containerEl) {
     });
 }
 
-/* =========================
-   Size Helpers
-   ========================= */
 function getSizeClass(hours) {
     if (hours >= 1500) return "size-1500";
     if (hours >= 1000) return "size-1000";
@@ -174,9 +153,6 @@ function getSizeClass(hours) {
     return "size-25";
 }
 
-/* =========================
-   Game Cover Resolver
-   ========================= */
 function getGameImageUrl(appid) {
     if (!appid)
         return "https://placehold.co/640x360/111111/ffffff?text=No+Cover";
@@ -184,9 +160,6 @@ function getGameImageUrl(appid) {
     return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
 }
 
-/* =========================
-   3D TILT – STABLE VERSION
-   ========================= */
 function initCardTilt() {
     const cards = document.querySelectorAll(".game-card");
 
