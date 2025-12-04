@@ -13,16 +13,14 @@ if (!STEAM_API_KEY) {
     process.exit(1);
 }
 
-// Orta katmanlar
 app.use(cors());
 app.use(express.json());
 
-// Frontend'i public klasöründen servis et
+// Frontend
 app.use(express.static(path.join(__dirname, "public")));
 
-// -------- STEAM API HELPER FONKSİYONLARI --------
 
-// Vanity URL'den SteamID çözme
+// Vanity
 async function resolveVanityUrl(username) {
     const url = new URL(
         "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/"
@@ -40,7 +38,6 @@ async function resolveVanityUrl(username) {
         return data.response.steamid;
     }
 
-    // Kullanıcı direkt 17 haneli steamid girdiyse
     if (/^\d{17}$/.test(username)) {
         return username;
     }
@@ -48,7 +45,6 @@ async function resolveVanityUrl(username) {
     return null;
 }
 
-// Kullanıcının sahip olduğu oyunlar
 async function fetchOwnedGames(steamId) {
     const url = new URL(
         "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -67,7 +63,6 @@ async function fetchOwnedGames(steamId) {
     const data = await res.json();
     const games = data.response && data.response.games ? data.response.games : [];
 
-    // Sadece oynanmış oyunlar + saat hesaplama
     const played = games
         .filter((g) => g.playtime_forever && g.playtime_forever > 0)
         .map((g) => ({
@@ -78,15 +73,12 @@ async function fetchOwnedGames(steamId) {
             img_logo_url: g.img_logo_url,
         }));
 
-    // En çok oynanandan aza doğru sırala
     played.sort((a, b) => b.hours - a.hours);
 
     return played;
 }
 
 // -------- API ROUTES --------
-
-// 1) Kullanıcı adından SteamID çözme
 app.get("/api/resolveVanity", async (req, res) => {
     try {
         const username = (req.query.username || "").trim();
@@ -106,7 +98,7 @@ app.get("/api/resolveVanity", async (req, res) => {
     }
 });
 
-// 2) SteamID'den oyunları getirme
+// SteamID
 app.get("/api/games", async (req, res) => {
     try {
         const steamId = (req.query.steamId || "").trim();
@@ -122,7 +114,6 @@ app.get("/api/games", async (req, res) => {
     }
 });
 
-// Tüm diğer istekleri index.html'e yönlendir (SPA senaryosu için)
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
